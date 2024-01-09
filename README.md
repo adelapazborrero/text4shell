@@ -7,8 +7,8 @@ This Go script provides a proof of concept for a reverse shell attack. It create
 1. Clone the repository:
 
 ```bash
-   git clone <repository_url>
-   cd <repository_directory>
+git clone <repository_url>
+cd <repository_directory>
 ```
 2. Run the script
 
